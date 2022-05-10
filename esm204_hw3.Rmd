@@ -89,7 +89,7 @@ l_pred[l_pred == 0] <- NA
 h_pred <- tibble(price = price,
                  demand = demand(price, model_demand_h))
 
-#benefit to consumers
+#MPC line
 qstar <- demand_agg(10)
 
 MPC_slope <- 10/qstar
@@ -102,13 +102,18 @@ supply <- function(q){
 MPC <- tibble(price = supply(agg_data$Qagg),
               demand = agg_data$Qagg)
 
+#MEC line
+
+
 #plot
 ggplot() +
-  geom_line(agg_data, mapping = aes(x = Qagg, y = price, color = "a"), lty = "solid") +
-  geom_line(l_pred, mapping = aes(x = demand, y = price, color = "b"), lty = "dashed") +
-  geom_line(h_pred, mapping = aes(x = demand, y = price, color = "c"), lty = "dashed") +
-  geom_line(MPC, mapping = aes(x = demand, y = price, color = "d"), lty = "solid") +
-  scale_color_manual(values = cal_palette("dudleya"), labels = expression("Aggregate", "Low income", "High income", "MPC")) +
+  geom_line(agg_data, mapping = aes(x = Qagg, y = price, color = "Aggregate"), lty = "solid") +
+  geom_line(l_pred, mapping = aes(x = demand, y = price, color = "Low income"), lty = "dashed") +
+  geom_line(h_pred, mapping = aes(x = demand, y = price, color = "High income"), lty = "dashed") +
+  geom_line(MPC, mapping = aes(x = demand, y = price, color = "MPC"), lty = "dotdash") +
+  geom_segment(aes(x = 0, y = 1.8, xend = 819713.75, yend = 1.8, color = "MEC"), lty = "solid") +
+  geom_line(MPC, mapping = aes(x = demand, y = price + 1.8, color = "MSC"), lty = "solid") +
+  scale_color_manual(values = cal_palette("kelp1")) +
   labs(x = "Quantity (kWh)",
        y = "Price (cents)",
        color = "Demand Curve") + 
