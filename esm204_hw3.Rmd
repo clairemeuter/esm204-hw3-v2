@@ -2,7 +2,9 @@
 title: "Distributional Consequences of Climate Policy"
 author: "Deanna Elliott, Lauren Harris, Mia Guarnieri"
 date: "5/7/2022"
-output: html_document
+output: 
+  html_document:
+    code_folding: hide
 ---
 
 Last year, the Biden Administration assembled an Inter-agency Working Group (IWG) tasked with
@@ -141,10 +143,10 @@ PS <- function(q){
 PS_calc <- PS(qfm)
 
 #environmental cost
-env_cost <- 1.8 * max(MPC$demand)
+env_cost <- 1.8 * qfm
 ```
 
-The benefit to consumers is \$`r CS_agg/100`. The benefit to producers is \$`r PS_calc/100`. The environmental costunder the status quo is $`r env_cost/100`
+The benefit to consumers is \$52987.22. The benefit to producers is \$26835.97. The environmental cost under the status quo is $9660.95.
 
 
 3. How is the current consumer benefit divided between “high” and “low” income consumers?
