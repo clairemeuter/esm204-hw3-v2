@@ -34,6 +34,7 @@ library(rootSolve)
 library(here)
 library(janitor)
 library(calecopal)
+library(stats)
 ```
 
 1. One kWh of electricity emits 0.85 pounds of CO2. Assuming that the interim SCC correctly reflects the total social cost of one metric ton of CO2, what is the marginal externality cost per kwH of electricity?
@@ -90,9 +91,9 @@ h_pred <- tibble(price = price,
                  demand = demand(price, model_demand_h))
 
 #MPC line
-qstar <- demand_agg(10)
+qfm <- demand_agg(10)
 
-MPC_slope <- 10/qstar
+MPC_slope <- 10/qfm
 
 supply <- function(q){
   p <- MPC_slope * q
@@ -102,23 +103,41 @@ supply <- function(q){
 MPC <- tibble(price = supply(agg_data$Qagg),
               demand = agg_data$Qagg)
 
-#MEC line
-
-
 #plot
 ggplot() +
-  geom_line(agg_data, mapping = aes(x = Qagg, y = price, color = "Aggregate"), lty = "solid") +
-  geom_line(l_pred, mapping = aes(x = demand, y = price, color = "Low income"), lty = "dashed") +
-  geom_line(h_pred, mapping = aes(x = demand, y = price, color = "High income"), lty = "dashed") +
-  geom_line(MPC, mapping = aes(x = demand, y = price, color = "MPC"), lty = "dotdash") +
-  geom_segment(aes(x = 0, y = 1.8, xend = 819713.75, yend = 1.8, color = "MEC"), lty = "solid") +
-  geom_line(MPC, mapping = aes(x = demand, y = price + 1.8, color = "MSC"), lty = "solid") +
-  scale_color_manual(values = cal_palette("kelp1")) +
+  geom_line(agg_data, mapping = aes(x = Qagg, y = price, color = "Aggregate", lty = "Aggregate")) +
+  geom_line(l_pred, mapping = aes(x = demand, y = price, color = "Low income", lty = "Low income")) +
+  geom_line(h_pred, mapping = aes(x = demand, y = price, color = "High income", lty = "High income")) +
+  geom_line(MPC, mapping = aes(x = demand, y = price, color = "MPC", lty = "MPC")) +
+  geom_segment(aes(x = 0, y = 1.8, xend = 819713.75, yend = 1.8, color = "MEC", lty = "MEC")) +
+  geom_line(MPC, mapping = aes(x = demand, y = price + 1.8, color = "MSC", lty = "MSC")) +
+  scale_color_manual(name = "Legend", values = cal_palette("kelp1")) +
+  scale_linetype_manual(name = "Legend", values = c("solid", "dashed", "dashed", "solid", "dotdash", "solid")) +
   labs(x = "Quantity (kWh)",
        y = "Price (cents)",
        color = "Demand Curve") + 
   theme_minimal()
+```
 
+```{r}
+#consumer surplus
+CS <- function(p, model){
+  q <- demand(p, model)
+  cs <- 0.5*(model$coefficients[[1]] - p)*q
+  return(cs)
+}
+
+CS_low <- CS(10, model_demand_l)
+
+
+CS_agg <- function(p){
+  cs <- CS(p,model_demand_l) + CS(p,model_demand_h)
+  return(cs)
+}
+
+#producer surplus
+
+#environmental cost
 ```
 
 
