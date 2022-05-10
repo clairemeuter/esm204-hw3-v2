@@ -128,17 +128,23 @@ CS <- function(p, model){
 }
 
 CS_low <- CS(10, model_demand_l)
+CS_high <- CS(10, model_demand_h)
 
-
-CS_agg <- function(p){
-  cs <- CS(p,model_demand_l) + CS(p,model_demand_h)
-  return(cs)
-}
+CS_agg <- CS_low + CS_high
 
 #producer surplus
 
+PS <- function(q){
+  0.5 * supply(q) * q
+}
+
+PS_calc <- PS(qfm)
+
 #environmental cost
+env_cost <- 1.8 * max(MPC$demand)
 ```
+
+The benefit to consumers is \$`r CS_agg/100`. The benefit to producers is \$`r PS_calc/100`. The environmental costunder the status quo is $`r env_cost/100`
 
 
 3. How is the current consumer benefit divided between “high” and “low” income consumers?
@@ -156,7 +162,7 @@ CS_agg <- function(p){
 (f) Total environmental damage
 (g) Total tax revenue generated
 
-5.Now, assume that all revenue from the electricity tax will be redistributed to the consumers in proportion to their pre-tax consumption. For example, if 80% of the electricity was consumed by “high” income consumers, then they get 80% of the tax revenue. Additionally, consider the fact that current scientific evidence suggests the true SCC may be much higher than $51. For a range of SCC values ($51, $75, $100, $125, and $150 per metric ton of CO2), calculate the effects of an SCC-based electricity tax on:
+5.Now, assume that all revenue from the electricity tax will be redistributed to the consumers in proportion to their pre-tax consumption. For example, if 80% of the electricity was consumed by “high” income consumers, then they get 80% of the tax revenue. Additionally, consider the fact that current scientific evidence suggests the true SCC may be much higher than \$51. For a range of SCC values (\$51, \$75, \$100, \$125, and $150 per metric ton of CO2), calculate the effects of an SCC-based electricity tax on:
 (a) Overall welfare of “high” income consumers
 (b) Overall welfare of “low” income consumers
 (c) Electricity producers
