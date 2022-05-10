@@ -96,7 +96,7 @@ MPC_slope <- 10/qstar
 
 supply <- function(q){
   p <- MPC_slope * q
-  return(as.numeric(p))
+  return(p)
 }
 
 MPC <- tibble(price = supply(agg_data$Qagg),
@@ -107,8 +107,8 @@ ggplot() +
   geom_line(agg_data, mapping = aes(x = Qagg, y = price, color = "a"), lty = "solid") +
   geom_line(l_pred, mapping = aes(x = demand, y = price, color = "b"), lty = "dashed") +
   geom_line(h_pred, mapping = aes(x = demand, y = price, color = "c"), lty = "dashed") +
-  geom_line(supply, mapping = aes(x = demand, y = price, color = "d"), lty = "solid") +
-  scale_color_manual(values = cal_palette("kelp1"), labels = expression("Aggregate", "Low income", "High income", "MPC")) +
+  geom_line(MPC, mapping = aes(x = demand, y = price, color = "d"), lty = "solid") +
+  scale_color_manual(values = cal_palette("dudleya"), labels = expression("Aggregate", "Low income", "High income", "MPC")) +
   labs(x = "Quantity (kWh)",
        y = "Price (cents)",
        color = "Demand Curve") + 
