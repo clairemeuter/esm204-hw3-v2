@@ -33,6 +33,7 @@ library(tidyverse)
 library(rootSolve)
 library(here)
 library(janitor)
+library(calecopal)
 ```
 
 1. One kWh of electricity emits 0.85 pounds of CO2. Assuming that the interim SCC correctly reflects the total social cost of one metric ton of CO2, what is the marginal externality cost per kwH of electricity?
@@ -88,18 +89,33 @@ l_pred[l_pred == 0] <- NA
 h_pred <- tibble(price = price,
                  demand = demand(price, model_demand_h))
 
+#benefit to consumers
+qstar <- demand_agg(10)
+
+MPC_slope <- 10/qstar
+
+supply <- function(q){
+  p <- MPC_slope * q
+  return(as.numeric(p))
+}
+
+MPC <- tibble(price = supply(agg_data$Qagg),
+              demand = agg_data$Qagg)
+
 #plot
 ggplot() +
-  geom_line(agg_data, mapping = aes(x = Qagg, y = price, color = "a"), lty = "solid", size = 1.1) +
-  geom_line(l_pred, mapping = aes(x = demand, y = price, color = "b"), lty = "dashed", size = 1.1) +
-  geom_line(h_pred, mapping = aes(x = demand, y = price, color = "c"), lty = "dashed", size = 1.1) +
-  scale_color_manual(values = c("darkorchid", "blue", "firebrick"), labels = expression("Aggregate", "Low", "High")) +
+  geom_line(agg_data, mapping = aes(x = Qagg, y = price, color = "a"), lty = "solid") +
+  geom_line(l_pred, mapping = aes(x = demand, y = price, color = "b"), lty = "dashed") +
+  geom_line(h_pred, mapping = aes(x = demand, y = price, color = "c"), lty = "dashed") +
+  geom_line(supply, mapping = aes(x = demand, y = price, color = "d"), lty = "solid") +
+  scale_color_manual(values = cal_palette("kelp1"), labels = expression("Aggregate", "Low income", "High income", "MPC")) +
   labs(x = "Quantity (kWh)",
-       y = "Price (USD)",
+       y = "Price (cents)",
        color = "Demand Curve") + 
   theme_minimal()
 
 ```
+
 
 3. How is the current consumer benefit divided between “high” and “low” income consumers?
 
