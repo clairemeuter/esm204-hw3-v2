@@ -38,7 +38,7 @@ library(janitor)
 1. One kWh of electricity emits 0.85 pounds of CO2. Assuming that the interim SCC correctly reflects the total social cost of one metric ton of CO2, what is the marginal externality cost per kwH of electricity?
 
 ```{r}
-
+#convert pounds to metric tons and then multiply by cost
 (0.85/2404.62)*51
 
 #(lbs carbon/1 metric ton)*SCC
