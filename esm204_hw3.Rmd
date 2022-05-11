@@ -41,7 +41,7 @@ library(stats)
 
 1. One kWh of electricity emits 0.85 pounds of CO2. Assuming that the interim SCC correctly reflects the total social cost of one metric ton of CO2, what is the marginal externality cost per kwH of electricity?
 
-```{r}
+```{r, results = FALSE}
 #convert pounds to metric tons and then multiply by cost
 (0.85/2204.62)*51
 
@@ -51,7 +51,7 @@ library(stats)
 
 **Assuming the interim SCC correctly reflects the total social cost of one metric ton of CO2, the marginal cost per kwH of electricity is $0.02**
 
-2.What is the aggregate monthly demand curve for electricity? What is the supply curve for electricity? What is the “benefit” to consumers under the status quo? What is the “benefit” to producers under the status quo? What is the environmental cost under the status quo?
+2. What is the aggregate monthly demand curve for electricity? What is the supply curve for electricity? What is the “benefit” to consumers under the status quo? What is the “benefit” to producers under the status quo? What is the environmental cost under the status quo?
 
 ```{r}
 data <- read_csv(here("data", "HW3_data.csv")) %>% 
@@ -162,55 +162,93 @@ low_CS <- CS_low/100
 4. Derive the optimal electricity tax (in cents per kWh) using the interim SCC. Noting that recent research has shown the poor face a disproportionate share of the impacts from climate change, assume that the climate externality is borne entirely by the “low” income group. What would be the effects of this tax on:
 
 (a) The amount of electricity produced and consumed
-
-```{r}
-#tax = P value of MEC at Q*
-tax <- 1.8
-
-demand_low <- function(q){
-  p <- 
-}
-
-```
-
 (b) The price of electricity
 
 ```{r}
+#factoring in tax for demand curves
+l_pred_new <- tibble(price = price + 2,
+                 demand = demand(price, model_demand_l))
 
+l_pred_new[l_pred_new == 0] <- NA
+
+h_pred_new <- tibble(price = price + 2,
+                 demand = demand(price, model_demand_h))
+
+#create a new Dagg
+demand_agg_new <- function(p){
+  q <- demand(p + 2 , model_demand_l) + demand(p + 2, model_demand_h)
+  return(q)
+}
+
+#applying the aggregate demand function to the price vector
+Qagg_new <- map(price, demand_agg_new) %>% unlist()
+
+#making the new dataframe with Qagg and price
+agg_data_new <- tibble(Qagg = Qagg_new, price = price)
+
+ggplot() +
+  geom_line(agg_data, mapping = aes(x = Qagg, y = price, color = "Aggregate", lty = "Aggregate")) +
+  geom_line(l_pred_new, mapping = aes(x = demand, y = price, color = "Low income (new)", lty = "Low income (new)")) +
+  geom_line(h_pred_new, mapping = aes(x = demand, y = price, color = "High income (new)", lty = "High income (new)")) +
+  geom_line(MPC, mapping = aes(x = demand, y = price, color = "MPC", lty = "MPC")) +
+  geom_segment(aes(x = 0, y = 2, xend = 819713.75, yend = 2, color = "MEC", lty = "MEC")) +
+  geom_line(agg_data_new, mapping = aes(x = Qagg_new, y = price, color = "New Aggregate", lty = "New Aggregate")) +
+  scale_color_manual(name = "Legend", values = cal_palette("kelp1")) +
+  scale_linetype_manual(name = "Legend", values = c("dotdash", "dashed", "dashed", "solid", "solid", "solid")) +
+  labs(x = "Quantity (kWh)",
+       y = "Price (cents)",
+       color = "Demand Curve") + 
+  theme_minimal()
+
+#finding the intersect
+fm_eq <- function(p)((demand(p + 2 , model_demand_l) + demand(p + 2, model_demand_h))-(p/MPC_slope))
+peq <- uniroot(fm_eq, c(0,600000))$root
+qeq <- demand_agg_new(peq)
 ```
+
+**Optimal tax is $0.02. The amount of electricity that is produced is 499660.54 kWh, and the price per kWh is $0.09.**
 
 (c) Overall welfare of “high” income consumers
 
 ```{r}
-
+high_CS <- CS_high/100
 ```
+
+**The welfare of high income consumers is \$44,874.79, as they do not bear the environmental costs.**
 
 (d) Overall welfare of “low” income consumers
 
 ```{r}
-
+CS_low_new <- CS_low/100 - env_cost
 ```
+
+**The welfare of low income consumer is negative due to having to bear the environmental cost. It is -$10653.27**
 
 (e) Power suppliers (i.e., electricity producers)
 
 ```{r}
-
+PS_new <- PS(qeq)
 ```
+
+**The welfare of power suppliers is $23258.02**
 
 (f) Total environmental damage
 
 ```{r}
-
+env_cost_new <- 2 * qeq
 ```
+
+**The total environmental damage is $9993.21**
 
 (g) Total tax revenue generated
 
 ```{r}
-
+tax_rev <- 2 * qeq
 ```
 
+**Total tax revenue generated is $9993.21**
 
-5.Now, assume that all revenue from the electricity tax will be redistributed to the consumers in proportion to their pre-tax consumption. For example, if 80% of the electricity was consumed by “high” income consumers, then they get 80% of the tax revenue. Additionally, consider the fact that current scientific evidence suggests the true SCC may be much higher than \$51. For a range of SCC values (\$51, \$75, \$100, \$125, and $150 per metric ton of CO2), calculate the effects of an SCC-based electricity tax on:
+5. Now, assume that all revenue from the electricity tax will be redistributed to the consumers in proportion to their pre-tax consumption. For example, if 80% of the electricity was consumed by “high” income consumers, then they get 80% of the tax revenue. Additionally, consider the fact that current scientific evidence suggests the true SCC may be much higher than \$51. For a range of SCC values (\$51, \$75, \$100, \$125, and $150 per metric ton of CO2), calculate the effects of an SCC-based electricity tax on:
 (a) Overall welfare of “high” income consumers
 (b) Overall welfare of “low” income consumers
 (c) Electricity producers
@@ -219,55 +257,4 @@ demand_low <- function(q){
 (a) What is total electricity consumption?
 (b) What is the total environmental externality?
 (c) What value of the electricity tax makes the total environmental damage the same as the damage when solar panels are available to the high income group?
-
-```{r}
-df <- read_csv(here("data", "HW3_data.csv")) %>% 
-  select(-1) %>% 
-  clean_names()
-
-model_demand_l <- lm(price_cents  ~ q_low_kwh, data=df)
-model_demand_h <- lm(price_cents ~ q_high_kwh, data=df)
-
-# need to rearrange the parameter to get Q(P)! 
-
-# Qgg = Qlow(P) + Qlow(h) 
-
-# Importantly, since the y-intercepts are different, we know that Qagg(P) will have a kink. I include an ifelse() statement to take
-# care of the kink.
-
-# define a function to get demand
-
-demand <- function(p, model){
-  q <- (p - model$coefficients[[1]])/model$coefficients[[2]]
-  q <- ifelse(q<0,0,q)
-  return(q)
-}
-
-# for each p level, return estimated aggregate demand
-demand_agg <- function(p){
-  q <- demand(p, model_demand_l) + demand(p, model_demand_h)
-  return(q)
-}
-
-price = seq(0, 30, length.out = 100)
-Qagg <- map(price, demand_agg) %>% unlist()
-
-df<- tibble(Qagg = Qagg, price = price)
-
-ggplot(df, aes(Qagg, price)) +
-  geom_line()
-
-# I also define functions for calculating the consumer surplus:
-
-CS <- function(p, model){
-  q <- demand(p, model)
-  cs <- 0.5*(model$coefficients[[1]] - p)*q
-  return(cs)
-}
-
-CS_agg <- function(p){
-  cs <- CS(p,model_demand_l) + CS(p,model_demand_h)
-  return(cs)
-}
-```
 
