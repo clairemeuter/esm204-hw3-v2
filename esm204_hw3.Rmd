@@ -211,8 +211,8 @@ qeq <- demand_agg_new(peq)
 (c) Overall welfare of “high” income consumers
 
 ```{r}
-demand <- function(p, model){
-  q <- (p - model$coefficients[[1]])/model$coefficients[[2]]
+demand_new <- function(p, model){
+  q <- ((p + 1.97) - model$coefficients[[1]])/model$coefficients[[2]]
   q <- ifelse(q<0,0,q)
   return(q)
 }
@@ -223,18 +223,19 @@ CS <- function(p, model){
   return(cs)
 }
 
-high_CS <- CS_high/100
+CSh_new <- CS(peq, model_demand_h)/100
 ```
 
-**The welfare of high income consumers is \$44,874.79, as they do not bear the environmental costs.**
+**The welfare of high income consumers is \$44,874.79 ($47744.28???), as they do not bear the environmental costs.**
 
 (d) Overall welfare of “low” income consumers
 
 ```{r}
-CS_low_new <- CS_low/100 - env_cost/100
+env_cost_new <- (1.97 * qeq)/100
+CS_low_new <- CS(peq, model_demand_l)/100 - env_cost_new/100
 ```
 
-**The welfare of low income consumer is negative due to having to bear the environmental cost. It is -$2460.94**
+**The welfare of low income consumer is negative due to having to bear the environmental cost. It is -$2460.94 (-$9854.26??)**
 
 (e) Power suppliers (i.e., electricity producers)
 
@@ -264,17 +265,17 @@ tax_rev <- (1.97 * qeq)/100
 
 (a) Overall welfare of “high” income consumers
 ```{r}
-MEC_51 <- (0.85/2204.62)*51 #1.97
-MEC_75 <- (0.85/2204.62)*75 #2.89
+MEC_51 <- (0.85/2204.62)*51 #1.97 cents
+MEC_75 <- (0.85/2204.62)*75 #2.89 cents
 MEC_100 <- (0.85/2204.62)*100 #3.86 cents
 MEC_125 <- (0.85/2204.62)*125 #4.82 cents
 MEC_150 <- (0.85/2204.62)*150 #5.78 cents
 
 MEC_vec <- c(MEC_51, MEC_75, MEC_100, MEC_125, MEC_150)
 
-for(i in MEC_vec){
-  
-  values <- data.frame()
+values <- data.frame()
+
+for(i in 1.96:MEC_vec){
   
   fm_eq <- function(p)((demand(p + i , model_demand_l) + demand(p + i,model_demand_h))-(p/MPC_slope))
   
@@ -284,11 +285,13 @@ for(i in MEC_vec){
   
   encost_new <- i * qeq
   
-  CSlow_new <- 
+  CSlow_new <- CS(peq_new, model_demand_l)/100 - encost_new/100
   
-  results <- c(i, peq_new, qeq_new, encost_new, CSlow_new, CShigh_new)
+  CShigh_new <- CS(peq, model_demand_h)/100
   
-  values <- bind_rows(results)
+  results <- c(i, peq_new, qeq_new, encost_new, CSlow_new, CShigh_new) %>% unlist()
+  
+  values <- map_dfr(results, bind_rows)
 }
 ```
 
