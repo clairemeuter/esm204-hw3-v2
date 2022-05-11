@@ -165,14 +165,21 @@ low_CS <- CS_low/100
 (b) The price of electricity
 
 ```{r}
+#new demand function
+demand_51tax <- function(p, model){
+  q <- ((p + 1.97) - model$coefficients[[1]])/model$coefficients[[2]]
+  q <- ifelse(q<0,0,q)
+  return(q)
+}
+
 #factoring in tax for demand curves
-l_pred_new <- tibble(price = price + 1.97,
-                 demand = demand(price, model_demand_l))
+l_pred_new <- tibble(price = price,
+                 demand = demand_51tax(price, model_demand_l))
 
 l_pred_new[l_pred_new == 0] <- NA
 
-h_pred_new <- tibble(price = price + 1.97,
-                 demand = demand(price, model_demand_h))
+h_pred_new <- tibble(price = price,
+                 demand = demand_51tax(price, model_demand_h))
 
 #create a new Dagg
 demand_agg_new <- function(p){
@@ -304,7 +311,7 @@ for(i in 1:length(MEC_vec)){
   
   results <- cbind(i, peq_new, qeq_new, encost_new, CSlow_new, CShigh_new) %>% unlist(recursive = FALSE)
   
-  values <- rbind(values, results)
+  values <- bind_rows(values, results)
 }
 ```
 ```{r}
