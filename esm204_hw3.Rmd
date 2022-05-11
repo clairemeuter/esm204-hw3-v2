@@ -49,7 +49,7 @@ library(stats)
 
 ```
 
-**Assuming the interim SCC correctly reflects the total social cost of one metric ton of CO2, the marginal cost per kwH of electricity is $0.02**
+**Assuming the interim SCC correctly reflects the total social cost of one metric ton of CO2, the marginal cost per kwH of electricity is $0.0197 (1.97 cents)**
 
 2. What is the aggregate monthly demand curve for electricity? What is the supply curve for electricity? What is the “benefit” to consumers under the status quo? What is the “benefit” to producers under the status quo? What is the environmental cost under the status quo?
 
@@ -111,8 +111,8 @@ ggplot() +
   geom_line(l_pred, mapping = aes(x = demand, y = price, color = "Low income", lty = "Low income")) +
   geom_line(h_pred, mapping = aes(x = demand, y = price, color = "High income", lty = "High income")) +
   geom_line(MPC, mapping = aes(x = demand, y = price, color = "MPC", lty = "MPC")) +
-  geom_segment(aes(x = 0, y = 2, xend = 819713.75, yend = 2, color = "MEC", lty = "MEC")) +
-  geom_line(MPC, mapping = aes(x = demand, y = price + 2, color = "MSC", lty = "MSC")) +
+  geom_segment(aes(x = 0, y = 1.97, xend = 819713.75, yend = 1.97, color = "MEC", lty = "MEC")) +
+  geom_line(MPC, mapping = aes(x = demand, y = price + 1.97, color = "MSC", lty = "MSC")) +
   scale_color_manual(name = "Legend", values = cal_palette("kelp1")) +
   scale_linetype_manual(name = "Legend", values = c("solid", "dashed", "dashed", "solid", "dotdash", "solid")) +
   labs(x = "Quantity (kWh)",
@@ -143,10 +143,10 @@ PS <- function(q){
 PS_calc <- PS(qfm)
 
 #environmental cost
-env_cost <- 2 * qfm
+env_cost <- 1.97 * qfm
 ```
 
-**The benefit to consumers is \$52987.22. The benefit to producers is \$26835.97. The environmental cost under the status quo is $10734.39.**
+**The benefit to consumers is \$52987.22. The benefit to producers is \$26835.97. The environmental cost under the status quo is $10573.37**
 
 
 3. How is the current consumer benefit divided between “high” and “low” income consumers?
@@ -166,17 +166,17 @@ low_CS <- CS_low/100
 
 ```{r}
 #factoring in tax for demand curves
-l_pred_new <- tibble(price = price + 2,
+l_pred_new <- tibble(price = price + 1.97,
                  demand = demand(price, model_demand_l))
 
 l_pred_new[l_pred_new == 0] <- NA
 
-h_pred_new <- tibble(price = price + 2,
+h_pred_new <- tibble(price = price + 1.97,
                  demand = demand(price, model_demand_h))
 
 #create a new Dagg
 demand_agg_new <- function(p){
-  q <- demand(p + 2 , model_demand_l) + demand(p + 2, model_demand_h)
+  q <- demand(p + 1.97 , model_demand_l) + demand(p + 1.97, model_demand_h)
   return(q)
 }
 
@@ -191,7 +191,7 @@ ggplot() +
   geom_line(l_pred_new, mapping = aes(x = demand, y = price, color = "Low income (new)", lty = "Low income (new)")) +
   geom_line(h_pred_new, mapping = aes(x = demand, y = price, color = "High income (new)", lty = "High income (new)")) +
   geom_line(MPC, mapping = aes(x = demand, y = price, color = "MPC", lty = "MPC")) +
-  geom_segment(aes(x = 0, y = 2, xend = 819713.75, yend = 2, color = "MEC", lty = "MEC")) +
+  geom_segment(aes(x = 0, y = 1.97, xend = 819713.75, yend = 1.97, color = "MEC", lty = "MEC")) +
   geom_line(agg_data_new, mapping = aes(x = Qagg_new, y = price, color = "New Aggregate", lty = "New Aggregate")) +
   scale_color_manual(name = "Legend", values = cal_palette("kelp1")) +
   scale_linetype_manual(name = "Legend", values = c("dotdash", "dashed", "dashed", "solid", "solid", "solid")) +
@@ -201,12 +201,12 @@ ggplot() +
   theme_minimal()
 
 #finding the intersect
-fm_eq <- function(p)((demand(p + 2 , model_demand_l) + demand(p + 2, model_demand_h))-(p/MPC_slope))
+fm_eq <- function(p)((demand(p + 1.97 , model_demand_l) + demand(p + 1.97, model_demand_h))-(p/MPC_slope))
 peq <- uniroot(fm_eq, c(0,600000))$root
 qeq <- demand_agg_new(peq)
 ```
 
-**Optimal tax is $0.02. The amount of electricity that is produced is 499660.54 kWh, and the price per kWh is $0.09.**
+**Optimal tax is 1.97 cents. The amount of electricity that is produced is 500216.43 kWh, and the price per kWh is 9.32 cents.**
 
 (c) Overall welfare of “high” income consumers
 
@@ -219,38 +219,44 @@ high_CS <- CS_high/100
 (d) Overall welfare of “low” income consumers
 
 ```{r}
-CS_low_new <- CS_low/100 - env_cost
+CS_low_new <- CS_low/100 - env_cost/100
 ```
 
-**The welfare of low income consumer is negative due to having to bear the environmental cost. It is -$10653.27**
+**The welfare of low income consumer is negative due to having to bear the environmental cost. It is -$2460.94**
 
 (e) Power suppliers (i.e., electricity producers)
 
 ```{r}
-PS_new <- PS(qeq)
+PS_new <- PS(qeq)/100
 ```
 
-**The welfare of power suppliers is $23258.02**
+**The welfare of power suppliers is $23309.80**
 
 (f) Total environmental damage
 
 ```{r}
-env_cost_new <- 2 * qeq
+env_cost_new <- (1.97 * qeq)/100
 ```
 
-**The total environmental damage is $9993.21**
+**The total environmental damage is $9854.26**
 
 (g) Total tax revenue generated
 
 ```{r}
-tax_rev <- 2 * qeq
+tax_rev <- (1.97 * qeq)/100
 ```
 
-**Total tax revenue generated is $9993.21**
+**Total tax revenue generated is $9854.26**
 
 5. Now, assume that all revenue from the electricity tax will be redistributed to the consumers in proportion to their pre-tax consumption. For example, if 80% of the electricity was consumed by “high” income consumers, then they get 80% of the tax revenue. Additionally, consider the fact that current scientific evidence suggests the true SCC may be much higher than \$51. For a range of SCC values (\$51, \$75, \$100, \$125, and $150 per metric ton of CO2), calculate the effects of an SCC-based electricity tax on:
+
 (a) Overall welfare of “high” income consumers
 ```{r}
+MEC_51 <- (0.85/2204.62)*51 #1.97
+MEC_75 <- (0.85/2204.62)*75 #2.89
+MEC_100 <- (0.85/2204.62)*100 #3.86 cents
+MEC_125 <- (0.85/2204.62)*125 #4.82 cents
+MEC_150 <- (0.85/2204.62)*150 #5.78 cents
 
 ```
 
