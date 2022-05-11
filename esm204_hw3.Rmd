@@ -327,15 +327,31 @@ for(i in MEC_vec){
     (demand(p + i , model_demand_l) + demand(p + i,model_demand_h))-(p/MPC_slope)
   }
   
+  demand_new <- function(p, model){
+  q <- ((p + i) - model$coefficients[[1]])/model$coefficients[[2]]
+  q <- ifelse(q<0,0,q)
+  return(q)
+  }
+  
+  CS_new <- function(p, model){
+  q <- demand_new(p, model)
+  cs <- 0.5*(model$coefficients[[1]] - p)*q
+  return(cs)
+  }
+  
+  demand_agg_fl <- function(p){
+  q <- demand(p + i , model_demand_l) + demand(p + i, model_demand_h)
+  return(q)}
+
   peq_new <- uniroot(fm_eq, c(0,600000))$root
   
-  qeq_new <- demand_agg_new(peq_new)
+  qeq_new <- demand_agg_fl(peq_new)
   
   encost_new <- i * qeq_new
   
-  CSlow_new <- CS(peq_new, model_demand_l)/100 - encost_new/100
+  CSlow_new <- CS_new(peq_new, model_demand_l)/100 - encost_new/100
   
-  CShigh_new <- CS(peq_new, model_demand_h)/100
+  CShigh_new <- CS_new(peq_new, model_demand_h)/100
   
   PSnew <- PS(qeq_new)/100
   
