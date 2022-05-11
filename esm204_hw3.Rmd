@@ -220,35 +220,59 @@ qeq <- demand_agg_new(peq)
 (c) Overall welfare of “high” income consumers
 
 ```{r}
-demand_new <- function(p, model){
+#new demand function
+demand_51tax <- function(p, model){
   q <- ((p + 1.97) - model$coefficients[[1]])/model$coefficients[[2]]
   q <- ifelse(q<0,0,q)
   return(q)
 }
 
-CS <- function(p, model){
-  q <- demand(p, model)
+CS_51tax <- function(p, model){
+  q <- demand_51tax(p, model)
   cs <- 0.5*(model$coefficients[[1]] - p)*q
   return(cs)
 }
 
-CSh_new <- CS(peq, model_demand_h)/100
+CSh_51 <- CS_51tax(peq, model_demand_h)/100
 ```
 
-**The welfare of high income consumers is \$44,874.79 ($47744.28???), as they do not bear the environmental costs.**
+**The welfare of high income consumers is $43524.05, as they do not bear the environmental costs.**
 
 (d) Overall welfare of “low” income consumers
 
 ```{r}
-env_cost_new <- (1.97 * qeq)/100
-CS_low_new <- CS(peq, model_demand_l)/100 - env_cost_new/100
+env_cost51 <- (1.97 * qeq)/100
+
+#new demand function
+demand_51tax <- function(p, model){
+  q <- ((p + 1.97) - model$coefficients[[1]])/model$coefficients[[2]]
+  q <- ifelse(q<0,0,q)
+  return(q)
+}
+
+CS_51tax <- function(p, model){
+  q <- demand_51tax(p, model)
+  cs <- 0.5*(model$coefficients[[1]] - p)*q
+  return(cs)
+}
+
+CSl_51 <- CS_51tax(peq, model_demand_l)/100 - env_cost51/100
 ```
 
-**The welfare of low income consumer is negative due to having to bear the environmental cost. It is -$2460.94 (-$9854.26??)**
+**The welfare of low income consumer is $7604.12**
 
 (e) Power suppliers (i.e., electricity producers)
 
 ```{r}
+supply <- function(q){
+  p <- MPC_slope * q
+  return(p)
+}
+
+PS <- function(q){
+  0.5 * supply(q) * q
+}
+
 PS_new <- PS(qeq)/100
 ```
 
@@ -257,7 +281,7 @@ PS_new <- PS(qeq)/100
 (f) Total environmental damage
 
 ```{r}
-env_cost_new <- (1.97 * qeq)/100
+env_cost51 <- (1.97 * qeq)/100
 ```
 
 **The total environmental damage is $9854.26**
@@ -265,7 +289,7 @@ env_cost_new <- (1.97 * qeq)/100
 (g) Total tax revenue generated
 
 ```{r}
-tax_rev <- (1.97 * qeq)/100
+tax_rev51 <- (1.97 * qeq)/100
 ```
 
 **Total tax revenue generated is $9854.26**
@@ -273,6 +297,8 @@ tax_rev <- (1.97 * qeq)/100
 5. Now, assume that all revenue from the electricity tax will be redistributed to the consumers in proportion to their pre-tax consumption. For example, if 80% of the electricity was consumed by “high” income consumers, then they get 80% of the tax revenue. Additionally, consider the fact that current scientific evidence suggests the true SCC may be much higher than \$51. For a range of SCC values (\$51, \$75, \$100, \$125, and $150 per metric ton of CO2), calculate the effects of an SCC-based electricity tax on:
 
 (a) Overall welfare of “high” income consumers
+(b) Overall welfare of “low” income consumers
+(c) Electricity producers
 ```{r}
 MEC_51 <- (0.85/2204.62)*51 #1.97 cents
 MEC_75 <- (0.85/2204.62)*75 #2.89 cents
@@ -293,7 +319,7 @@ equilibrium <- function(p){
 
 values <- data.frame()
 
-for(i in 1:length(MEC_vec)){
+for(i in MEC_vec){
   
   fm_eq <- function(p){
     (demand(p + i , model_demand_l) + demand(p + i,model_demand_h))-(p/MPC_slope)
@@ -309,39 +335,15 @@ for(i in 1:length(MEC_vec)){
   
   CShigh_new <- CS(peq_new, model_demand_h)/100
   
-  results <- cbind(i, peq_new, qeq_new, encost_new, CSlow_new, CShigh_new) %>% unlist(recursive = FALSE)
+  PSnew <- PS(qeq_new)/100
   
-  values <- bind_rows(values, results)
+  results <- cbind(i, peq_new, qeq_new, encost_new, CSlow_new, CShigh_new, PSnew) %>% unlist(recursive = FALSE)
+  
+  values <- rbind(values, results)
 }
-```
-```{r}
-fm_eq_i <- function(p){
-    (demand(p + MEC_75 , model_demand_l) + demand(p + MEC_75,model_demand_h))-(p/MPC_slope)
-  }
 
-peq_75 <- uniroot(fm_eq, c(0,600000))$root
-  
-qeq_new <- demand_agg_new(peq_new)
-  
-encost_new <- i * qeq_new
-  
-CSlow_new <- CS(peq_new, model_demand_l)/100 - encost_new/100
-  
-CShigh_new <- CS(peq_new, model_demand_h)/100
-```
-
-
-(b) Overall welfare of “low” income consumers
-```{r}
 
 ```
-
-
-(c) Electricity producers
-```{r}
-
-```
-
 
 6. Suppose the “high” income group has access to expensive home solar generation. This lowers the electricity demand curve for the “high” income group by half (vertically). Under this new demand:
 (a) What is total electricity consumption?
