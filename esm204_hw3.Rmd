@@ -275,9 +275,18 @@ MEC_150 <- (0.85/2204.62)*150 #5.78 cents
 
 MEC_vec <- c(MEC_51, MEC_75, MEC_100, MEC_125, MEC_150)
 
+equilibrium <- function(p){
+  (demand(p + i , model_demand_l) + demand(p + i,model_demand_h))-(p/MPC_slope)
+  
+  peq_new <- uniroot(fm_eq, c(0,600000))$root
+  
+  qeq_new <- demand_agg_new(peq_new)
+  
+  }
+
 values <- data.frame()
 
-for(i in 1.96:MEC_vec){
+for(i in 1:length(MEC_vec)){
   
   fm_eq <- function(p){
     (demand(p + i , model_demand_l) + demand(p + i,model_demand_h))-(p/MPC_slope)
@@ -293,10 +302,25 @@ for(i in 1.96:MEC_vec){
   
   CShigh_new <- CS(peq_new, model_demand_h)/100
   
-  results <- c(i, peq_new, qeq_new, encost_new, CSlow_new, CShigh_new) %>% unlist(recursive = FALSE)
+  results <- cbind(i, peq_new, qeq_new, encost_new, CSlow_new, CShigh_new) %>% unlist(recursive = FALSE)
   
   values <- bind_rows(values, results)
 }
+```
+```{r}
+fm_eq_i <- function(p){
+    (demand(p + MEC_75 , model_demand_l) + demand(p + MEC_75,model_demand_h))-(p/MPC_slope)
+  }
+
+peq_75 <- uniroot(fm_eq, c(0,600000))$root
+  
+qeq_new <- demand_agg_new(peq_new)
+  
+encost_new <- i * qeq_new
+  
+CSlow_new <- CS(peq_new, model_demand_l)/100 - encost_new/100
+  
+CShigh_new <- CS(peq_new, model_demand_h)/100
 ```
 
 
