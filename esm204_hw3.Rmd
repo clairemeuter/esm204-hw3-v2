@@ -211,6 +211,18 @@ qeq <- demand_agg_new(peq)
 (c) Overall welfare of “high” income consumers
 
 ```{r}
+demand <- function(p, model){
+  q <- (p - model$coefficients[[1]])/model$coefficients[[2]]
+  q <- ifelse(q<0,0,q)
+  return(q)
+}
+
+CS <- function(p, model){
+  q <- demand(p, model)
+  cs <- 0.5*(model$coefficients[[1]] - p)*q
+  return(cs)
+}
+
 high_CS <- CS_high/100
 ```
 
@@ -258,6 +270,26 @@ MEC_100 <- (0.85/2204.62)*100 #3.86 cents
 MEC_125 <- (0.85/2204.62)*125 #4.82 cents
 MEC_150 <- (0.85/2204.62)*150 #5.78 cents
 
+MEC_vec <- c(MEC_51, MEC_75, MEC_100, MEC_125, MEC_150)
+
+for(i in MEC_vec){
+  
+  values <- data.frame()
+  
+  fm_eq <- function(p)((demand(p + i , model_demand_l) + demand(p + i,model_demand_h))-(p/MPC_slope))
+  
+  peq_new <- uniroot(fm_eq, c(0,600000))$root
+  
+  qeq_new <- demand_agg_new(peq)
+  
+  encost_new <- i * qeq
+  
+  CSlow_new <- 
+  
+  results <- c(i, peq_new, qeq_new, encost_new, CSlow_new, CShigh_new)
+  
+  values <- bind_rows(results)
+}
 ```
 
 
