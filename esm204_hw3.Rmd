@@ -28,8 +28,8 @@ income consumers.
 • The current electricity price (without any taxes) is $.10 per kWh.
 • The marginal cost of producing a kWh of electricity is linear and has a price-intercept of 0
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include=TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 library(tidyverse)
 library(rootSolve)
@@ -146,7 +146,7 @@ PS_calc <- PS(qfm)
 env_cost <- 1.8 * qfm
 ```
 
-The benefit to consumers is \$52987.22. The benefit to producers is \$26835.97. The environmental cost under the status quo is $9660.95.
+**The benefit to consumers is \$52987.22. The benefit to producers is \$26835.97. The environmental cost under the status quo is $9660.95.**
 
 
 3. How is the current consumer benefit divided between “high” and “low” income consumers?
@@ -157,7 +157,7 @@ high_CS <- CS_high/100
 low_CS <- CS_low/100
 ```
 
-Currently, the benefit to high income consumers is $44,874.79, and the benefit to low income consumers is $8,112.43.
+Currently, the benefit to high income consumers is \$44,874.79, and the benefit to low income consumers is $8,112.43.
 
 4. Derive the optimal electricity tax (in cents per kWh) using the interim SCC. Noting that recent research has shown the poor face a disproportionate share of the impacts from climate change, assume that the climate externality is borne entirely by the “low” income group. What would be the effects of this tax on:
 (a) The amount of electricity produced and consumed
