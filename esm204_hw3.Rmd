@@ -37,6 +37,7 @@ library(here)
 library(janitor)
 library(calecopal)
 library(stats)
+library(kableExtra)
 ```
 
 1. One kWh of electricity emits 0.85 pounds of CO2. Assuming that the interim SCC correctly reflects the total social cost of one metric ton of CO2, what is the marginal externality cost per kwH of electricity?
@@ -306,6 +307,7 @@ MEC_100 <- (0.85/2204.62)*100 #3.86 cents
 MEC_125 <- (0.85/2204.62)*125 #4.82 cents
 MEC_150 <- (0.85/2204.62)*150 #5.78 cents
 
+SCC_vec <- c(51, 75, 100, 125, 150)
 MEC_vec <- c(MEC_51, MEC_75, MEC_100, MEC_125, MEC_150)
 
 equilibrium <- function(p){
@@ -337,12 +339,18 @@ for(i in MEC_vec){
   
   PSnew <- PS(qeq_new)/100
   
-  results <- cbind(i, peq_new, qeq_new, encost_new, CSlow_new, CShigh_new, PSnew) %>% unlist(recursive = FALSE)
+  results <- cbind((i * 100), peq_new, qeq_new, encost_new, CSlow_new, CShigh_new, PSnew) %>% unlist(recursive = FALSE)
   
   values <- rbind(values, results)
 }
 
+values["SCC"] <- SCC_vec
+values <- values[, c(8,1,2,3,4,5,6,7)]
 
+values %>% 
+  kable(digits = c(2, 2, 2, 2, 2, 2, 2),
+        col.names = c("SCC ($)", "Optimal tax (cents)", "Equilibrium price (cents)", "Equilibrium quantity (kWh)", "Environmental cost ($)", "Consumer surplus (low-income)", "Consumer surplus (high-income)", "Producer surplus")) %>% 
+        kable_styling(full_width = FALSE, position = "center")
 ```
 
 6. Suppose the “high” income group has access to expensive home solar generation. This lowers the electricity demand curve for the “high” income group by half (vertically). Under this new demand:
