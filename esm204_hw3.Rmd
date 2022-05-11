@@ -201,7 +201,9 @@ ggplot() +
   theme_minimal()
 
 #finding the intersect
-fm_eq <- function(p)((demand(p + 1.97 , model_demand_l) + demand(p + 1.97, model_demand_h))-(p/MPC_slope))
+fm_eq <- function(p){
+  (demand(p + 1.97 , model_demand_l) + demand(p + 1.97, model_demand_h))-(p/MPC_slope)
+  }
 peq <- uniroot(fm_eq, c(0,600000))$root
 qeq <- demand_agg_new(peq)
 ```
@@ -277,21 +279,23 @@ values <- data.frame()
 
 for(i in 1.96:MEC_vec){
   
-  fm_eq <- function(p)((demand(p + i , model_demand_l) + demand(p + i,model_demand_h))-(p/MPC_slope))
+  fm_eq <- function(p){
+    (demand(p + i , model_demand_l) + demand(p + i,model_demand_h))-(p/MPC_slope)
+  }
   
   peq_new <- uniroot(fm_eq, c(0,600000))$root
   
-  qeq_new <- demand_agg_new(peq)
+  qeq_new <- demand_agg_new(peq_new)
   
-  encost_new <- i * qeq
+  encost_new <- i * qeq_new
   
   CSlow_new <- CS(peq_new, model_demand_l)/100 - encost_new/100
   
-  CShigh_new <- CS(peq, model_demand_h)/100
+  CShigh_new <- CS(peq_new, model_demand_h)/100
   
-  results <- c(i, peq_new, qeq_new, encost_new, CSlow_new, CShigh_new) %>% unlist()
+  results <- c(i, peq_new, qeq_new, encost_new, CSlow_new, CShigh_new) %>% unlist(recursive = FALSE)
   
-  values <- map_dfr(results, bind_rows)
+  values <- bind_rows(values, results)
 }
 ```
 
