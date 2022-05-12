@@ -368,7 +368,8 @@ values <- values[, c(8,1,2,3,4,5,6,7)]
 values %>% 
   kable(digits = c(2, 2, 2, 2, 2, 2, 2),
         col.names = c("SCC (\\$)", "Optimal tax (cents)", "Equilibrium price (cents)", "Equilibrium quantity (kWh)", "Environmental cost ($)", "Consumer surplus (low-income)", "Consumer surplus (high-income)", "Producer surplus")) %>% 
-        kable_styling(full_width = FALSE, position = "center")
+        kable_styling(full_width = FALSE, position = "center") %>% 
+  kable_classic()
 ```
 
 6. Suppose the “high” income group has access to expensive home solar generation. This lowers the electricity demand curve for the “high” income group by half (vertically). Under this new demand:
