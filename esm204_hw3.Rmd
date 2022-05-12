@@ -377,17 +377,17 @@ for(i in MEC_vec){
   
   PSnew <- PS(qeq_new)/100
   
-  results <- cbind((i * 100), peq_new, qeq_new, encost_new, CSlow_new, CShigh_new, PSnew) %>% unlist(recursive = FALSE)
+  results <- cbind((i * 100), qeq_new, encost_new, CSlow_new, CShigh_new, PSnew) %>% unlist(recursive = FALSE)
   
   values <- rbind(values, results)
 }
 
 values["SCC"] <- SCC_vec
-values <- values[, c(8,1,2,3,4,5,6,7)]
+values <- values[, c(7,1,2,3,4,5,6)]
 
 values %>% 
-  kable(digits = c(2, 2, 2, 2, 2, 2, 2),
-        col.names = c("SCC (\\$)", "Optimal tax (cents)", "Equilibrium price (cents)", "Equilibrium quantity (kWh)", "Environmental cost ($)", "Consumer surplus (low-income)", "Consumer surplus (high-income)", "Producer surplus")) %>% 
+  kable(digits = c(2, 2, 2, 2, 2, 2),
+        col.names = c("SCC (\\$)", "Optimal tax (cents)", "Equilibrium quantity (kWh)", "Environmental cost ($)", "Consumer surplus (low-income)", "Consumer surplus (high-income)", "Producer surplus")) %>% 
         kable_styling(full_width = FALSE, position = "center") %>% 
   kable_classic()
 ```
@@ -412,7 +412,7 @@ hpred_halved[hpred_halved == 0] <- NA
 
 #aggregate demand
 demand_agg_6 <- function(p){
-  q <- demand_halved(p, model_demand_l) + demand_halved(p, model_demand_h)
+  q <- demand(p, model_demand_l) + demand_halved(p, model_demand_h)
   return(q)
 }
 
@@ -448,7 +448,7 @@ ggplot() +
 ```{r}
 #finding the intersect
 freemarket_6 <- function(p){
-  (demand_halved(p, model_demand_l) + demand_halved(p, model_demand_h))-(p/MPC_slope)
+  (demand(p, model_demand_l) + demand_halved(p, model_demand_h))-(p/MPC_slope)
   }
 peq_6 <- uniroot(freemarket_6, c(0,750000))$root
 qeq_6 <- demand_agg_6(peq_6)
@@ -463,37 +463,68 @@ env_dmg_6 <- (1.97 * qeq_6)/100
 
 ```
 
-**Total environmental externality is $7,859.87**
+**Total environmental externality is $8564.74**
 
 (c) What value of the electricity tax makes the total environmental damage the same as the damage when solar panels are available to the high income group?
 ```{r}
-#demand function
+#new demand functions
+demand_halved_p <- function(q, model){
+  p <- (q * model$coefficients[[2]] + model$coefficients[[1]]) * 0.5
+  p <- ifelse(p<0,0,p)
+  return(p)
+}
+
 demand_p <- function(q, model){
   p <- q * model$coefficients[[2]] + model$coefficients[[1]]
   p <- ifelse(p<0,0,p)
   return(p)
 }
 
-#aggregate demand original
+#new aggregate demand adjusted
+demand_agg_p_new <- function(q){
+  p <- demand_p(q, model_demand_l) + demand_halved_p(q, model_demand_h)
+  return(p)
+}
+
+#original aggregate demand adjusted
 demand_agg_p <- function(q){
   p <- demand_p(q, model_demand_l) + demand_p(q, model_demand_h)
   return(p)
 }
 
-#demand halved function
-demand_halved_p6 <- function(q, model){
-  p <- (q*model$coefficients[[2]] + model$coefficients[[1]]) * 0.5
-  p <- ifelse(p<0,0,p)
+diff <- demand_agg_p(qeq_6) - demand_agg_p_new(qeq_6)
+
+#MPC line
+qfm_6 <- demand_agg(peq_6 + diff)
+
+MPC_slope_6 <- (peq_6 + diff)/qfm_6
+
+supply_6 <- function(q){
+  p <- MPC_slope_6 * q
   return(p)
 }
 
-#new aggregate demand
-demand_agg_p6 <- function(q){
-  p <- demand_halved_p6(q, model_demand_l) + demand_halved_p6(q, model_demand_h)
-  return(p)
-}
+MPC_6 <- tibble(price = supply_6(agg_data$Qagg),
+              demand = agg_data$Qagg)
 
-diff <- demand_agg_p(qeq_6) - demand_agg_p6(qeq_6)
+
+#test plot
+ggplot() +
+  geom_line(agg_data, mapping = aes(x = Qagg, y = price, color = "Aggregate", lty = "Aggregate")) +
+  geom_line(l_pred, mapping = aes(x = demand, y = price, color = "Low income", lty = "Low income")) +
+  geom_line(h_pred, mapping = aes(x = demand, y = price, color = "High income", lty = "High income")) +
+  geom_line(MPC, mapping = aes(x = demand, y = price, color = "MPC", lty = "MPC")) +
+  geom_line(MPC_6, mapping = aes(x = demand, y = price , color = "MPC + t", lty = "MPC + t")) +
+  geom_segment(mapping = aes(x = 0, y = 1.97, xend = 819713.75, yend = 1.97, color = "MEC", lty = "MEC")) +
+  geom_line(agg_data_6, mapping = aes(x = Qagg, y = price, color = "Aggregate (new)", lty = "Aggregate (new)")) +
+  geom_line(hpred_halved, mapping = aes(x = demand, y = price, color = "High income (new)", lty = "High income (new)")) +
+  geom_vline(xintercept = qeq_6)+
+  scale_color_manual(name = "Legend", values = cal_palette(name = "kelp1", n = 8, type = "continuous")) +
+  scale_linetype_manual(name = "Legend", values = c("dotdash", "solid", "dashed", "solid", "solid", "dashed", "solid", "solid")) +
+  labs(x = "Quantity (kWh)",
+       y = "Price (cents)",
+       color = "Demand Curve") + 
+  theme_minimal()
 ```
 
 **Value of the tax is 5.43 cents**
