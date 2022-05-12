@@ -196,13 +196,15 @@ agg_data_new <- tibble(Qagg = Qagg_new, price = price)
 
 ggplot() +
   geom_line(agg_data, mapping = aes(x = Qagg, y = price, color = "Aggregate", lty = "Aggregate")) +
+  geom_line(l_pred, mapping = aes(x = demand, y = price, color = "Low income", lty = "Low income")) +
+  geom_line(h_pred, mapping = aes(x = demand, y = price, color = "High income", lty = "High income")) +
   geom_line(l_pred_new, mapping = aes(x = demand, y = price, color = "Low income (new)", lty = "Low income (new)")) +
   geom_line(h_pred_new, mapping = aes(x = demand, y = price, color = "High income (new)", lty = "High income (new)")) +
   geom_line(MPC, mapping = aes(x = demand, y = price, color = "MPC", lty = "MPC")) +
   geom_segment(aes(x = 0, y = 1.97, xend = 819713.75, yend = 1.97, color = "MEC", lty = "MEC")) +
   geom_line(agg_data_new, mapping = aes(x = Qagg_new, y = price, color = "Aggregate (new)", lty = "Aggregate (new)")) +
-  scale_color_manual(name = "Legend", values = cal_palette("kelp1")) +
-  scale_linetype_manual(name = "Legend", values = c("dotdash", "solid", "dashed", "dashed", "solid", "solid")) +
+  scale_color_manual(name = "Legend", values = cal_palette(name = "kelp1", n = 7, type = "continuous")) +
+  scale_linetype_manual(name = "Legend", values = c("dotdash", "solid", "dashed", "dashed", "solid", "solid", "solid", "solid")) +
   labs(x = "Quantity (kWh)",
        y = "Price (cents)",
        color = "Demand Curve") + 
@@ -446,31 +448,31 @@ env_dmg_6 <- (1.97 * qeq_6)/100
 ```{r}
 #demand function
 demand_p <- function(q, model){
-  p <- q*model$coefficients[[2]] + model$coefficients[[1]]
+  p <- q * model$coefficients[[2]] + model$coefficients[[1]]
   p <- ifelse(p<0,0,p)
   return(p)
 }
 
 #aggregate demand original
-demand_agg <- function(q){
-  p <- demand(q, model_demand_l) + demand(q, model_demand_h)
+demand_agg_p <- function(q){
+  p <- demand_p(q, model_demand_l) + demand_p(q, model_demand_h)
   return(p)
 }
 
 #demand halved function
-demand_halved <- function(p, model){
-  q <- ((2*p) - model$coefficients[[1]])/model$coefficients[[2]]
-  q <- ifelse(q<0,0,q)
-  return(q)
+demand_halved_p6 <- function(q, model){
+  p <- (q*model$coefficients[[2]] + model$coefficients[[1]]) * 0.5
+  p <- ifelse(p<0,0,p)
+  return(p)
 }
 
 #new aggregate demand
-demand_agg_6 <- function(p){
-  q <- demand_halved(p, model_demand_l) + demand_halved(p, model_demand_h)
-  return(q)
+demand_agg_p6 <- function(q){
+  p <- demand_halved_p6(q, model_demand_l) + demand_halved_p6(q, model_demand_h)
+  return(p)
 }
 
-diff <- demand_agg(peq_6) - demand_agg_6(peq_6)
+diff <- demand_agg_p(qeq_6) - demand_agg_p6(qeq_6)
 ```
 
 Lauren
