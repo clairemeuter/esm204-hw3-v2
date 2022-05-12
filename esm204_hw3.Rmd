@@ -373,7 +373,36 @@ values %>%
 
 (a) What is total electricity consumption?
 ```{r}
+#demand function
+demand_halved <- function(p, model){
+  q <- ((2*p) - model$coefficients[[1]])/model$coefficients[[2]]
+  q <- ifelse(q<0,0,q)
+  return(q)
+}
 
+#price vector
+price = seq(0, 30, length.out = 100)
+
+hpred_halved <- tibble(price = price,
+                 demand = demand_halved(price, model_demand_h))
+
+hpred_halved[hpred_halved == 0] <- NA
+
+
+ggplot() +
+  geom_line(agg_data, mapping = aes(x = Qagg, y = price, color = "Aggregate", lty = "Aggregate")) +
+  geom_line(l_pred_new, mapping = aes(x = demand, y = price, color = "Low income (new)", lty = "Low income (new)")) +
+  geom_line(h_pred_new, mapping = aes(x = demand, y = price, color = "High income (new)", lty = "High income (new)")) +
+  geom_line(MPC, mapping = aes(x = demand, y = price, color = "MPC", lty = "MPC")) +
+  geom_segment(aes(x = 0, y = 1.97, xend = 819713.75, yend = 1.97, color = "MEC", lty = "MEC")) +
+  geom_line(agg_data_new, mapping = aes(x = Qagg_new, y = price, color = "Aggregate (new)", lty = "Aggregate (new)")) +
+  geom_line(hpred_halved, mapping = aes(x = demand, y = price, color = "Demand (new)", lty = "Demand (new)")) +
+  scale_color_manual(name = "Legend", values = cal_palette(name = "kelp1", n = 7, type = "continuous")) +
+  scale_linetype_manual(name = "Legend", values = c("dotdash", "solid", "dashed", "dashed", "solid", "solid", "solid")) +
+  labs(x = "Quantity (kWh)",
+       y = "Price (cents)",
+       color = "Demand Curve") + 
+  theme_minimal()
 ```
 
 
