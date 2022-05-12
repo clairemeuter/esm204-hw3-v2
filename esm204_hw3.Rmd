@@ -212,7 +212,7 @@ ggplot() +
 fm_eq <- function(p){
   (demand(p + 1.97 , model_demand_l) + demand(p + 1.97, model_demand_h))-(p/MPC_slope)
   }
-peq <- uniroot(fm_eq, c(0,600000))$root
+peq <- uniroot(fm_eq, c(0,750000))$root
 qeq <- demand_agg_new(peq)
 ```
 
@@ -313,7 +313,7 @@ MEC_vec <- c(MEC_51, MEC_75, MEC_100, MEC_125, MEC_150)
 equilibrium <- function(p){
   (demand(p + i , model_demand_l) + demand(p + i,model_demand_h))-(p/MPC_slope)
   
-  peq_new <- uniroot(fm_eq, c(0,600000))$root
+  peq_new <- uniroot(fm_eq, c(0,750000))$root
   
   qeq_new <- demand_agg_new(peq_new)
   
@@ -343,7 +343,7 @@ for(i in MEC_vec){
   q <- demand(p + i , model_demand_l) + demand(p + i, model_demand_h)
   return(q)}
 
-  peq_new <- uniroot(fm_eq, c(0,600000))$root
+  peq_new <- uniroot(fm_eq, c(0,750000))$root
   
   qeq_new <- demand_agg_fl(peq_new)
   
@@ -375,12 +375,11 @@ values %>%
 ```{r}
 #demand function
 demand_halved <- function(p, model){
-  q <- ((0.5*p) - model$coefficients[[1]])/model$coefficients[[2]]
+  q <- ((2*p) - model$coefficients[[1]])/model$coefficients[[2]]
   q <- ifelse(q<0,0,q)
   return(q)
 }
 
-#price vector
 price = seq(0, 30, length.out = 100)
 
 hpred_halved <- tibble(price = price,
@@ -390,7 +389,7 @@ hpred_halved[hpred_halved == 0] <- NA
 
 #aggregate demand
 demand_agg_6 <- function(p){
-  q <- demand_halved(p, model_demand_l) + demand(p, model_demand_h)
+  q <- demand_halved(p, model_demand_l) + demand_halved(p, model_demand_h)
   return(q)
 }
 
@@ -402,6 +401,9 @@ Qagg_6 <- map(price, demand_agg_6) %>% unlist()
 
 #making the new dataframe with Qagg and price
 agg_data_6<- tibble(Qagg = Qagg_6, price = price)
+
+agg_data_6[agg_data_6 == 0] <- NA
+
 
 #plot
 ggplot() +
@@ -425,11 +427,11 @@ ggplot() +
 freemarket_6 <- function(p){
   (demand_halved(p, model_demand_l) + demand_halved(p, model_demand_h))-(p/MPC_slope)
   }
-peq_6 <- uniroot(freemarket_6, c(0,600000))$root
+peq_6 <- uniroot(freemarket_6, c(0,750000))$root
 qeq_6 <- demand_agg_6(peq_6)
 ```
 
-**Total electricity consumption is 500216.43 kWh**
+**Total electricity consumption is  kWh**
 
 Lauren
 ```{r}
