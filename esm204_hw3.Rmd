@@ -431,7 +431,7 @@ peq_6 <- uniroot(freemarket_6, c(0,750000))$root
 qeq_6 <- demand_agg_6(peq_6)
 ```
 
-**Total electricity consumption is  kWh**
+**Total electricity consumption is 398978.07 kWh**
 
 Lauren
 ```{r}
