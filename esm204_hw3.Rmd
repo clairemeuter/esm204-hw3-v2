@@ -388,15 +388,30 @@ hpred_halved <- tibble(price = price,
 
 hpred_halved[hpred_halved == 0] <- NA
 
+#aggregate demand
+demand_agg_6 <- function(p){
+  q <- demand_halved(p, model_demand_l) + demand(p, model_demand_h)
+  return(q)
+}
 
+#price vector
+price = seq(0, 30, length.out = 100)
+
+#applying the aggregate demand function to the price vector
+Qagg_6 <- map(price, demand_agg_6) %>% unlist()
+
+#making the new dataframe with Qagg and price
+agg_data_6<- tibble(Qagg = Qagg_6, price = price)
+
+#plot
 ggplot() +
   geom_line(agg_data, mapping = aes(x = Qagg, y = price, color = "Aggregate", lty = "Aggregate")) +
-  geom_line(l_pred_new, mapping = aes(x = demand, y = price, color = "Low income (new)", lty = "Low income (new)")) +
-  geom_line(h_pred_new, mapping = aes(x = demand, y = price, color = "High income (new)", lty = "High income (new)")) +
+  geom_line(l_pred, mapping = aes(x = demand, y = price, color = "Low income", lty = "Low income")) +
+  geom_line(h_pred, mapping = aes(x = demand, y = price, color = "High income", lty = "High income")) +
   geom_line(MPC, mapping = aes(x = demand, y = price, color = "MPC", lty = "MPC")) +
-  geom_segment(aes(x = 0, y = 1.97, xend = 819713.75, yend = 1.97, color = "MEC", lty = "MEC")) +
-  geom_line(agg_data_new, mapping = aes(x = Qagg_new, y = price, color = "Aggregate (new)", lty = "Aggregate (new)")) +
-  geom_line(hpred_halved, mapping = aes(x = demand, y = price, color = "Demand (new)", lty = "Demand (new)")) +
+  geom_segment(mapping = aes(x = 0, y = 1.97, xend = 819713.75, yend = 1.97, color = "MEC", lty = "MEC")) +
+  geom_line(agg_data_6, mapping = aes(x = Qagg, y = price, color = "Aggregate (new)", lty = "Aggregate (new)")) +
+  geom_line(hpred_halved, mapping = aes(x = demand, y = price, color = "High income (new)", lty = "High income (new)")) +
   scale_color_manual(name = "Legend", values = cal_palette(name = "kelp1", n = 7, type = "continuous")) +
   scale_linetype_manual(name = "Legend", values = c("dotdash", "solid", "dashed", "dashed", "solid", "solid", "solid")) +
   labs(x = "Quantity (kWh)",
@@ -405,6 +420,9 @@ ggplot() +
   theme_minimal()
 ```
 
+```{r}
+
+```
 
 (b) What is the total environmental externality?
 ```{r}
