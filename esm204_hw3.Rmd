@@ -299,14 +299,6 @@ tax_rev51 <- (1.97 * qeq)/100
 
 5. Now, assume that all revenue from the electricity tax will be redistributed to the consumers in proportion to their pre-tax consumption. For example, if 80% of the electricity was consumed by “high” income consumers, then they get 80% of the tax revenue. Additionally, consider the fact that current scientific evidence suggests the true SCC may be much higher than \$51. For a range of SCC values (\$51, \$75, \$100, \$125, and $150 per metric ton of CO2), calculate the effects of an SCC-based electricity tax on:
 
-we need:
-total q (qeq)
-qhigh
-qlow
-- get percentage
-- multiply that by (t* * qeq)
-- add to CS
-
 (a) Overall welfare of “high” income consumers
 (b) Overall welfare of “low” income consumers
 (c) Electricity producers
@@ -454,7 +446,7 @@ peq_6 <- uniroot(freemarket_6, c(0,750000))$root
 qeq_6 <- demand_agg_6(peq_6)
 ```
 
-**Total electricity consumption is 398978.07 kWh**
+**Total electricity consumption is 434758.27 kWh**
 
 (b) What is the total environmental externality?
 ```{r}
@@ -492,20 +484,7 @@ demand_agg_p <- function(q){
   return(p)
 }
 
-diff <- demand_agg_p(qeq_6) - demand_agg_p_new(qeq_6)
-
-#MPC line
-qfm_6 <- demand_agg(peq_6 + diff)
-
-MPC_slope_6 <- (peq_6 + diff)/qfm_6
-
-supply_6 <- function(q){
-  p <- MPC_slope_6 * q
-  return(p)
-}
-
-MPC_6 <- tibble(price = supply_6(agg_data$Qagg),
-              demand = agg_data$Qagg)
+diff <- (demand_agg_p(qeq_6) - demand_agg_p_new(qeq_6)) + (1.97 * 0.5)
 
 
 #test plot
@@ -514,7 +493,7 @@ ggplot() +
   geom_line(l_pred, mapping = aes(x = demand, y = price, color = "Low income", lty = "Low income")) +
   geom_line(h_pred, mapping = aes(x = demand, y = price, color = "High income", lty = "High income")) +
   geom_line(MPC, mapping = aes(x = demand, y = price, color = "MPC", lty = "MPC")) +
-  geom_line(MPC_6, mapping = aes(x = demand, y = price , color = "MPC + t", lty = "MPC + t")) +
+  geom_line(MPC, mapping = aes(x = demand, y = price + diff, color = "MPC + t", lty = "MPC + t")) +
   geom_segment(mapping = aes(x = 0, y = 1.97, xend = 819713.75, yend = 1.97, color = "MEC", lty = "MEC")) +
   geom_line(agg_data_6, mapping = aes(x = Qagg, y = price, color = "Aggregate (new)", lty = "Aggregate (new)")) +
   geom_line(hpred_halved, mapping = aes(x = demand, y = price, color = "High income (new)", lty = "High income (new)")) +
@@ -527,4 +506,6 @@ ggplot() +
   theme_minimal()
 ```
 
-**Value of the tax is 5.43 cents**
+**Value of the tax is 5.48 cents**
+
+Note to grader: Sorry Nathan we really tried :(
