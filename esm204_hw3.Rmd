@@ -444,6 +444,13 @@ env_dmg_6 <- (1.97 * qeq_6)/100
 
 (c) What value of the electricity tax makes the total environmental damage the same as the damage when solar panels are available to the high income group?
 ```{r}
+#demand function
+demand <- function(p, model){
+  q <- (p - model$coefficients[[1]])/model$coefficients[[2]]
+  q <- ifelse(q<0,0,q)
+  return(q)
+}
+
 #aggregate demand original
 demand_agg <- function(p){
   q <- demand(p, model_demand_l) + demand(p, model_demand_h)
@@ -457,5 +464,15 @@ demand_agg_6 <- function(p){
 }
 
 diff <- demand_agg(peq_6) - demand_agg_6(peq_6)
+```
+
+Lauren
+```{r}
+
+```
+
+Deanna
+```{r}
+
 ```
 
