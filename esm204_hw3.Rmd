@@ -375,7 +375,7 @@ values %>%
 ```{r}
 #demand function
 demand_halved <- function(p, model){
-  q <- ((2*p) - model$coefficients[[1]])/model$coefficients[[2]]
+  q <- ((0.5*p) - model$coefficients[[1]])/model$coefficients[[2]]
   q <- ifelse(q<0,0,q)
   return(q)
 }
@@ -413,7 +413,7 @@ ggplot() +
   geom_line(agg_data_6, mapping = aes(x = Qagg, y = price, color = "Aggregate (new)", lty = "Aggregate (new)")) +
   geom_line(hpred_halved, mapping = aes(x = demand, y = price, color = "High income (new)", lty = "High income (new)")) +
   scale_color_manual(name = "Legend", values = cal_palette(name = "kelp1", n = 7, type = "continuous")) +
-  scale_linetype_manual(name = "Legend", values = c("dotdash", "solid", "dashed", "dashed", "solid", "solid", "solid")) +
+  scale_linetype_manual(name = "Legend", values = c("dotdash", "solid", "dashed", "solid", "dashed", "solid", "solid")) +
   labs(x = "Quantity (kWh)",
        y = "Price (cents)",
        color = "Demand Curve") + 
@@ -421,8 +421,26 @@ ggplot() +
 ```
 
 ```{r}
+#finding the intersect
+freemarket_6 <- function(p){
+  (demand_halved(p, model_demand_l) + demand_halved(p, model_demand_h))-(p/MPC_slope)
+  }
+peq_6 <- uniroot(freemarket_6, c(0,600000))$root
+qeq_6 <- demand_agg_6(peq_6)
+```
+
+**Total electricity consumption is 500216.43 kWh**
+
+Lauren
+```{r}
 
 ```
+
+Deanna
+```{r}
+
+```
+
 
 (b) What is the total environmental externality?
 ```{r}
