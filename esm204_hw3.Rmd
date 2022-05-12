@@ -218,7 +218,7 @@ peq <- uniroot(fm_eq, c(0,750000))$root
 qeq <- demand_agg_new(peq)
 ```
 
-**Optimal tax is 1.97 cents. The amount of electricity that is produced is 500216.43 kWh, and the price per kWh is 9.32 cents.**
+**Optimal tax is 1.97 cents. The amount of electricity that is produced is 500216.43 kWh, and the price per kWh is 11.29 cents.**
 
 (c) Overall welfare of “high” income consumers
 
@@ -475,13 +475,4 @@ demand_agg_p6 <- function(q){
 diff <- demand_agg_p(qeq_6) - demand_agg_p6(qeq_6)
 ```
 
-Lauren
-```{r}
-
-```
-
-Deanna
-```{r}
-
-```
-
+**Value of the tax is 5.43 cents**
